@@ -1,7 +1,7 @@
 # beverage parameter ####
 setwd(this.path::this.dir())
-dir( pattern = "_bev_" )
-source.file <- print(dir( pattern = "Rsource" )[ length( dir( pattern = "Rsource" ))])
+dir( pattern = "Rsource" )
+source.file <- print("Rsource_Sprite_Zero_mop_V01.R")
 source( paste0(getwd(), "/", source.file) )
 
 # spectra ####
@@ -50,13 +50,12 @@ matplot(dt$para$trs$spc$wl
         , t(dt$raw$spc[ , dt$para$trs$spc$numcol, with = F])
         , lty = 1, type = "l")
 
-plot(dt$raw$spc$X279)
-dt$raw$spc <- dt$raw$spc[ dt$raw$spc$X279 > .3 , ]
-dt$raw$spc <- dt$raw$spc[ dt$raw$spc$X279 < .44, ]
+plot(dt$raw$spc$X200)
+dt$raw$spc <- dt$raw$spc[ dt$raw$spc$X200 < 1 , ]
 
-matplot(dt$para$trs$spc$wl
-        , t(dt$raw$spc[ , dt$para$trs$spc$numcol, with = F])
-        , lty = 1, type = "l")
+# matplot(dt$para$trs$spc$wl
+#         , t(dt$raw$spc[ , dt$para$trs$spc$numcol, with = F])
+#         , lty = 1, type = "l")
 
 # export clean spc csv ####
 fwrite(dt$raw$spc
