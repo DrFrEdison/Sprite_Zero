@@ -19,19 +19,10 @@ setwd("..")
 require(openxlsx)
 
 dir( pattern = "Q-xx-MTX-")
-dt$qxxmtx1 <- "Q-xx-MTX-00022-V01-00_Fanta_Lemon_Zero.xlsx"
-dt$qxxmtx2 <- "Q-xx-MTX-00023-V01-00_Fanta_Lemon_Zero.xlsx"
+dt$qxxmtx1 <- "Q-xx-MTX-00021-V01-0_Sprite_Zero.xlsx"
 
-istprozent1 <- openxlsx::read.xlsx(dt$qxxmtx1, sheet = "p_IST_g")
-istprozent2 <- openxlsx::read.xlsx(dt$qxxmtx2, sheet = "p_IST_g")
-istprozent2 <- istprozent2[ 1:4 , ]
-istprozent <- rbind.fill(list(istprozent1, istprozent2))
-
-istprozent <- istprozent[ !is.na(istprozent$T1K) , ]
-
-istprozent$T3[ is.na(istprozent$T3) & istprozent$H2O < 100 ] <- istprozent$H2O[ is.na(istprozent$T3) & istprozent$H2O < 100 ]
-istprozent$T3[ is.na(istprozent$T3) & istprozent$H2O > 100 ] <- istprozent$T2[ is.na(istprozent$T3) & istprozent$H2O > 100 ]
-
+istprozent <- openxlsx::read.xlsx(dt$qxxmtx1, sheet = "p_IST_g")
+istprozent <- istprozent[ !is.na(istprozent$Part2) , 1:5]
 istprozent
 names(istprozent)[1] <- "Probe_Anteil"
 
@@ -39,11 +30,9 @@ if( Acid == T){
   Acid1 <- openxlsx::read.xlsx(dt$qxxmtx1, sheet = "SA")
   Acid1 <- Acid1[ Acid1$Total != 0 , ]
   Acid1 <- as.numeric(gsub(",",".",Acid1$Total[ - 1]))
-  Acid2 <- openxlsx::read.xlsx(dt$qxxmtx2, sheet = "SA")
-  Acid2 <- Acid2[ Acid2$Total != 0 , ]
-  Acid2 <- as.numeric(gsub(",",".",Acid2$Total[ - 1]))
-
-  istprozent <- cbind(istprozent, Acid = c(Acid1, Acid2))
+  Acid1 <- Acid1 * 100 / 243 * 100
+  
+  istprozent <- cbind(istprozent, TTA = c(Acid1))
 }
 
 # Model parameter ####
@@ -151,7 +140,7 @@ View(istprozentmeaspc)
 
 istprozentmeaspc <- istprozentmeaspc[order(istprozentmeaspc$Probe_Anteil), ]
 
-istprozentmeaspc <- istprozentmeaspc[,.moveme(names(istprozentmeaspc), "Probe first; files_spc first")]
+istprozentmeaspc <- istprozentmeaspc[,moveme(names(istprozentmeaspc), "Probe first; files_spc first")]
 istprozentmeaspc$files_spc <- basename(istprozentmeaspc$files_spc)
 names(istprozentmeaspc) <- gsub("X","",names(istprozentmeaspc))
 

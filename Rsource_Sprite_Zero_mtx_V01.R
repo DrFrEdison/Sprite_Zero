@@ -22,9 +22,9 @@ dt$para$wl1 <- c(190)
 dt$para$wl2 <- c(598)
 dt$para$wl[[1]] <- seq(dt$para$wl1, dt$para$wl2, 1)
 
-# dt$para$substance <- c("Part2",	"Part1k",	"Part3")
-# dt$para$unit <- c( bquote("%"),  bquote("%"),  bquote("%"),  bquote("%") )
-# dt$para$ylab <- c(bquote("Part2 in %"), bquote("Part1k in %"), bquote("Part3 in %"))
+dt$para$substance <- c("Part2",	"Part1k",	"Part3", "TTA")
+dt$para$unit <- c( bquote("%"),  bquote("%"),  bquote("%"),  bquote("%") ,  bquote("%"))
+dt$para$ylab <- c(bquote("Part2 in %"), bquote("Part1k in %"), bquote("Part3 in %"), bquote("TTA in %"))
 # dt$para$mop.date <- "220522"
 # dt$para$SOLL <- c(14.15, 119,84, 595.01, 49.9)
 
