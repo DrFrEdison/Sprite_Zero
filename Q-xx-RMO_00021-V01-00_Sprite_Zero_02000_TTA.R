@@ -52,8 +52,8 @@ legend("topright", c(paste0("SL ", dt$para$substance[ dt$para$i]), "Ausmischung"
 
 # PLS para ####
 dt$model.raw$data$Probe == dt$para$substance[dt$para$i]
-dt$para.pls$wlr <- wlr_function(200:260, 200:260, 10); nrow(dt$para.pls$wlr)
-dt$para.pls$wlm <- wlr_function_multi(200:260, 200:260, 10); nrow(dt$para.pls$wlm)
+dt$para.pls$wlr <- wlr_function(1900:290, 200:260, 5); nrow(dt$para.pls$wlr)
+dt$para.pls$wlm <- wlr_function_multi(190:290, 200:260, 5); nrow(dt$para.pls$wlm)
 dt$para.pls$wl <- rbind.fill(dt$para.pls$wlm, dt$para.pls$wlr); nrow(dt$para.pls$wl); dt$para.pls$wlr <- NULL; dt$para.pls$wlm <- NULL
 dt$para.pls$ncomp <- 6
 
@@ -66,19 +66,26 @@ dt$pls$pls <- pls_function(csv_transfered = dt$model.raw
                            , wlr = dt$para.pls$wl
                            , ncomp = dt$para.pls$ncomp)
 
-dt$pls$lm <- pls_lm_function(dt$pls$pls
+dt$pls$lm <- pls_lm_function(pls_function_obj = dt$pls$pls
                              , csv_transfered = dt$model.raw
                              , substance = dt$para$substance[dt$para$i]
                              , wlr = dt$para.pls$wl
                              , ncomp = dt$para.pls$ncomp)
 # Prediction ####
 dt$pls$pred <- lapply(dt$trs, function( x ) produktion_prediction(csv_transfered = x, pls_function_obj = dt$pls$pls, ncomp = dt$para.pls$ncomp))
-dt$pls$merge <- lapply(dt$pls$pred, function( x ) merge_pls(pls_pred = x, pls_lm = dt$pls$lm, mean = c(dt$para$SOLL[dt$para$i] * c(.8, 1.2)), R2=.8))
+dt$pls$merge <- lapply(dt$pls$pred, function( x ) merge_pls(pls_pred = x, pls_lm = dt$pls$lm, mean = c(dt$para$SOLL[dt$para$i] * c(.75, 1.25)), R2=.7))
 dt$pls$merge <- lapply(dt$pls$merge, function( x ) x[ order(x$sd) , ])
 lapply(dt$pls$merge, head)
 
 if( length(dt$pls$merge) > 1){ dt$pls$mergesite <- merge_pls_site(merge_pls_lm_predict_ls = dt$pls$merge, number = 2000, ncomp = dt$para.pls$ncomp)} else{ dt$pls$mergesite <- dt$pls$merge[[1]]}
 head(dt$pls$mergesite)
+
+plot(sort(dt$pls$mergesite$sd))
+dt$pls$mergesite <- dt$pls$mergesite[ dt$pls$mergesite$sd <10 , ]
+
+View(dt$pls$mergesite[ order(dt$pls$mergesite$slope, decreasing = T) , ] )
+
+head(dt$pls$mergesite[ dt$pls$mergesite$R2 > .95 , ])
 
 # Prediciton lin ####
 # dt$pls$pred.lin <- produktion_prediction(csv_transfered = dt$lin$trs, pls_function_obj = dt$pls$pls, ncomp = dt$para.pls$ncomp)
@@ -97,11 +104,11 @@ head(dt$pls$mergesite)
 # head(dt$pls$lin[ dt$pls$lin$spc != "spc" , ])
 
 # Prediciton ####
-dt$mop$ncomp <- 2
+dt$mop$ncomp <- 5
 dt$mop$wl1 <- 210
-dt$mop$wl2 <- 230
-dt$mop$wl3 <- NA
-dt$mop$wl4 <- NA
+dt$mop$wl2 <- 215
+dt$mop$wl3 <- 250
+dt$mop$wl4 <- 255
 dt$mop$spc <- "2nd"
 dt$mop$model <- pls_function(dt$model.raw, dt$para$substance[ dt$para$i ], data.frame(dt$mop$wl1, dt$mop$wl2, dt$mop$wl3, dt$mop$wl4), dt$mop$ncomp, spc = dt$mop$spc)
 dt$mop$model  <- dt$mop$model [[grep(dt$mop$spc, names(dt$mop$model))[1]]][[1]]
@@ -123,7 +130,10 @@ dt$mop$pred <- lapply(dt$trs, function(x) pred_of_new_model(dt$model.raw
 #                                      , dt$mop$spc
 #                                      , dt$lin$trs)
 
-dt$mop$pred <- lapply(dt$mop$pred, function( x ) as.numeric(ma( x, 5)))
+dt$mop$pred <- mapply(function( ypred, datetime ) ma.date(x = ypred, time = datetime$data$datetime, diff.time.max = 1200)
+                      , ypred = dt$mop$pred
+                      , datetime = dt$trs
+                      , SIMPLIFY = F)
 dt$mop$bias <- lapply(dt$mop$pred, function( x ) round( bias( median( x, na.rm = T), 0, dt$para$SOLL[ dt$para$i] ), 3))
 dt$mop$bias
 # dt$mop$bias.lin <- round( bias( median( dt$mop$pred.lin, na.rm = T), 0, median(dt$lin$trs$data$Dilution * dt$para$SOLL[dt$para$i] / 100) ), 3)
